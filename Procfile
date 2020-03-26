@@ -1,0 +1,1 @@
+web: gunicorn hestia_requests.wsgi
