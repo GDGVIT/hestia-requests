@@ -25,7 +25,10 @@ class ItemRequestView(APIView):
         if len(item_requests) >= 5:
             return Response({"message":"User has already made maximum requests"}, status=status.HTTP_400_BAD_REQUEST)
         
-        req_data = request.data
+        req_data = {}
+        req_data["item_name"] = request.data["item_name"]
+        req_data["quantity"] = request.data["quantity"]
+        req_data["location"] = request.data["location"]
         req_data['request_made_by'] = payload['_id']
         serializer = ItemRequestSerializer(data=req_data)
         if serializer.is_valid():
