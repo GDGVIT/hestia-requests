@@ -4,7 +4,8 @@ from rest_framework import routers
 from .views import (
     ItemRequestView,
     AllRequestView,
-    AcceptsView
+    AcceptsView,
+    MyRequestView,
 )
 
 router = routers.DefaultRouter()
@@ -26,6 +27,10 @@ urlpatterns = [
     path(
         'accept/',
         AcceptsView.as_view()
+    ),
+    path(
+        'my_requests/',
+        MyRequestView.as_view()
     )
 
 ]

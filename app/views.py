@@ -93,6 +93,25 @@ class AllRequestView(APIView):
         serializer = ItemRequestSerializer(item_requests, many=True)
         return Response({"message":"Requests found", "Request":serializer.data}, status=status.HTTP_200_OK)
 
+class MyRequestView(APIView):
+
+    def get(self, request):
+        token = request.headers.get('Authorization', None)
+        if token is None or token=="":
+            return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
+        
+        payload = get_user_id(token)
+        if payload['_id'] is None:
+            return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
+
+        requests = ItemRequest.objects.filter(request_made_by=payload['_id'])
+        if len(requests)==0:
+            return Response({"message":"No Requests found"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            serializer = ItemRequestSerializer(requests, many=True)
+            return Response({"message":"Requests found", "Requests":serializer.data}, status=status.HTTP_200_OK)
+
+
 class AcceptsView(APIView):
 
     def post(self, request):
