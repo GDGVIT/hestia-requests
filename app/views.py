@@ -92,16 +92,21 @@ class AllRequestView(APIView):
 
         serializer = ItemRequestSerializer(item_requests, many=True)
         data = serializer.data
+
+        flag = True
+
+        while flag:
+            for item in data:
+                if item['request_made_by']==payload['_id']:
+                    data.remove(item)
+
+            flag = False
+
+            for item in data:
+                if item['request_made_by']==payload['_id']:
+                    flag = True
+
         
-        print("################" + payload['_id'] + "###################")
-        print(data)
-        for item in data:
-            if item['request_made_by']==payload['_id']:
-                data.remove(item)
-        print(data)
-        for item in data:
-            if item['request_made_by']==payload['_id']:
-                data.remove(item)
 
         if len(item_requests) == 0:
             return Response({"message":"No requests found"}, status=status.HTTP_204_NO_CONTENT)
