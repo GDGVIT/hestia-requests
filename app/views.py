@@ -129,7 +129,7 @@ class MyRequestView(APIView):
             return Response({"message":"No Requests found"}, status=status.HTTP_204_NO_CONTENT)
         else:
             serializer = ItemRequestSerializer(requests, many=True)
-            return Response({"message":"Requests found", "Requests":serializer.data}, status=status.HTTP_200_OK)
+            return Response({"message":"Requests found", "Request":serializer.data}, status=status.HTTP_200_OK)
 
 
 class AcceptsView(APIView):
