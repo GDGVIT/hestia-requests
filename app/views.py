@@ -93,6 +93,8 @@ class AllRequestView(APIView):
         serializer = ItemRequestSerializer(item_requests, many=True)
         data = serializer.data
         
+        print("################" + payload['_id'] + "###################")
+        print(data)
         for item in data:
             if item['request_made_by']==payload['_id']:
                 data.remove(item)
