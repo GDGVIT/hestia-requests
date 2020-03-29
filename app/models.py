@@ -13,3 +13,13 @@ class Accepts(models.Model):
     request_acceptor = models.CharField(max_length=255)
     request_id = models.ForeignKey(ItemRequest, on_delete=models.CASCADE)
 
+class Organizations(models.Model):
+    name = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    country = models.CharField(max_length=50)
+    description = models.TextField()
+    email = models.EmailField()
+    phone_no = models.CharField(max_length=10)
+    is_verified = models.BooleanField(default=False)
+
