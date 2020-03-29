@@ -91,7 +91,20 @@ class AllRequestView(APIView):
             return Response({"message":"No requests found"}, status=status.HTTP_204_NO_CONTENT)
 
         serializer = ItemRequestSerializer(item_requests, many=True)
-        return Response({"message":"Requests found", "Request":serializer.data}, status=status.HTTP_200_OK)
+        data = serializer.data
+        
+        for item in data:
+            if item['request_made_by']==payload['_id']:
+                data.remove(item)
+        print(data)
+        for item in data:
+            if item['request_made_by']==payload['_id']:
+                data.remove(item)
+
+        if len(item_requests) == 0:
+            return Response({"message":"No requests found"}, status=status.HTTP_204_NO_CONTENT)
+
+        return Response({"message":"Requests found", "Request":data}, status=status.HTTP_200_OK)
 
 class MyRequestView(APIView):
 
