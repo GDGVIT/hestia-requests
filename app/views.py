@@ -186,13 +186,13 @@ class AcceptsView(APIView):
                 accept.request_id = accept.request_id + "," + str(item_request.id)
                 accept.save()
                 serializer = AcceptsSerializer(accept)
-                item_request.accepted_by = item_request.accepted_by + "," + payload['_id']
+                item_request.accepted_by = str(item_request.accepted_by) + "," + str(payload['_id'])
                 item_request.save()
                 return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
             else:
                 accepts = {
                     "request_made_by": item_request.request_made_by,
-                    "request_acceptor": payload['_id'],
+                    "request_acceptor": str(payload['_id']),
                     "request_id": str(item_request.id)
                 }
                 serializer = AcceptsSerializer(data=accepts)
