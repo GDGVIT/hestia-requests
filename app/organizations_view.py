@@ -40,7 +40,8 @@ class OrganizatonView(APIView):
         try:
             org = Organizations.objects.get(id=pk)
             serializer = OrganizationsSerializer(org)
-            return Response({"message":"Organization Found", "Organization":serializer.data}, status=status.HTTP_200_OK)
+            serializer = serializer.data
+            return Response({"message":"Organization Found", "Organization":serializer}, status=status.HTTP_200_OK)
         except Organizations.DoesNotExist:
             return Response({"message":"Organization Does Not Exist"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -62,6 +63,11 @@ class UserViewOrganization(APIView):
             if org.is_verified:
                 serializer = OrganizationsSerializer(org)
                 result.append(serializer.data)
+
+        key = 1
+        for item in result:
+            item['key'] = key
+            key += 1
         
         if len(result)==0:
             return Response({"message":"Organizations not found"}, status=status.HTTP_204_NO_CONTENT)
@@ -85,7 +91,13 @@ class AdminOrganizationView(APIView):
             return Response({"message":"No Organizations Found"}, status=status.HTTP_204_NO_CONTENT)
 
         serializer = OrganizationsSerializer(orgs, many=True)
-        return Response({"message":"Organizations Found", "Organization":serializer.data}, status=status.HTTP_200_OK)
+        serializer = serializer.data
+        key = 1
+        for item in serializer:
+            item['key'] = key
+            key += 1
+        
+        return Response({"message":"Organizations Found", "Organization":serializer}, status=status.HTTP_200_OK)
 
 class VerifyOrganizationView(APIView):
 
