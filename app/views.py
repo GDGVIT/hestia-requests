@@ -101,6 +101,7 @@ class AllRequestView(APIView):
         data = serializer.data
 
         flag = True
+        print(payload['_id'])
 
         while flag:
             for item in data:
@@ -115,7 +116,7 @@ class AllRequestView(APIView):
 
         
 
-        if len(item_requests) == 0:
+        if len(data) == 0:
             return Response({"message":"No requests found"}, status=status.HTTP_204_NO_CONTENT)
 
         return Response({"message":"Requests found", "Request":data}, status=status.HTTP_200_OK)
@@ -160,19 +161,36 @@ class AcceptsView(APIView):
 
         if item_request.request_made_by == payload['_id']:
             return Response({"message":"User not allowed to accept request"}, status=status.HTTP_400_BAD_REQUEST)
+
+        print(item_request.location.lower())
+        print(request.data['location'].lower())
         
         if item_request.location.lower() == request.data['location'].lower():
-            accepts = {
-                "request_made_by": item_request.request_made_by,
-                "request_acceptor": payload['_id'],
-                "request_id": item_request.id
-            }
-            serializer = AcceptsSerializer(data=accepts)
-            if serializer.is_valid():
-                serializer.save()
+            accepts = Accepts.objects.filter(Q(request_made_by=item_request.request_made_by) & Q(request_acceptor=payload['_id']))
+            print(accepts)
+            
+            if len(accepts)!=0:
+                accept = accepts[0]
+                items_accepted = accept.request_id
+                items_accepted = items_accepted.split(',')
+                if str(item_request.id) in items_accepted:
+                    return Response({'message':"Item Already Accepted"}, status=status.HTTP_400_BAD_REQUEST)
+                accept.request_id = accept.request_id + "," + str(item_request.id)
+                accept.save()
+                serializer = AcceptsSerializer(accept)
                 return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
             else:
-                return Response({"message":"Invalid acceptor"}, status=status.HTTP_400_BAD_REQUEST)
+                accepts = {
+                    "request_made_by": item_request.request_made_by,
+                    "request_acceptor": payload['_id'],
+                    "request_id": str(item_request.id)
+                }
+                serializer = AcceptsSerializer(data=accepts)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"message":"Invalid acceptor"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message":"Locations are not same"}, status=status.HTTP_400_BAD_REQUEST)
 

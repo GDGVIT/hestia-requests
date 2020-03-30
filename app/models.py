@@ -11,7 +11,7 @@ class ItemRequest(models.Model):
 class Accepts(models.Model):
     request_made_by = models.CharField(max_length=255)
     request_acceptor = models.CharField(max_length=255)
-    request_id = models.ForeignKey(ItemRequest, on_delete=models.CASCADE)
+    request_id = models.CharField(max_length=500)
 
 class Organizations(models.Model):
     name = models.CharField(max_length=50)
