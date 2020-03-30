@@ -63,7 +63,6 @@ class ItemRequestView(APIView):
 
     def get(self, request, pk):
         token = request.headers.get('Authorization', None)
-        print(token)
         if token is None or token=="":
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
@@ -102,7 +101,6 @@ class AllRequestView(APIView):
         data = serializer.data
 
         flag = True
-        print(payload['_id'])
 
         while flag:
             for item in data:
@@ -117,11 +115,8 @@ class AllRequestView(APIView):
                 if item['request_made_by']==payload['_id'] or payload['_id'] in request_acceptors:
                     flag = True
 
-        print(data)
-
         key = 1
         for item in data:
-            print(item['item_name'])
             item['key'] = key
             key += 1
         
@@ -169,8 +164,10 @@ class AcceptsView(APIView):
         if request.data.get('request_id', None)==None or request.data.get("location", None)==None:
             return Response({"message":"Invalid accept"}, status=status.HTTP_400_BAD_REQUEST)
 
+        print(type(request.data['request_id']))
+
         try:
-            item_request = ItemRequest.objects.get(id=request.data['request_id'])
+            item_request = ItemRequest.objects.get(id=int(request.data['request_id']))
         except ItemRequest.DoesNotExist:
             return Response({"message":"Request Not Found"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -179,7 +176,6 @@ class AcceptsView(APIView):
         
         if item_request.location.lower() == request.data['location'].lower():
             accepts = Accepts.objects.filter(Q(request_made_by=item_request.request_made_by) & Q(request_acceptor=payload['_id']))
-            print(accepts)
             
             if len(accepts)!=0:
                 accept = accepts[0]
