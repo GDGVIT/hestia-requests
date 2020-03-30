@@ -152,7 +152,7 @@ class MyRequestView(APIView):
             for item in serializer:
                 item['key'] = key
                 key += 1
-            return Response({"message":"Requests found", "Request":serializer.data}, status=status.HTTP_200_OK)
+            return Response({"message":"Requests found", "Request":serializer}, status=status.HTTP_200_OK)
 
 
 class AcceptsView(APIView):
