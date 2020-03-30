@@ -23,5 +23,8 @@ class Organizations(models.Model):
     description = models.TextField()
     email = models.EmailField()
     phone_no = models.CharField(max_length=10)
+    address = models.CharField(max_length=200, null=True, default=None)
+    other_contact = models.TextField(null=True, default=None)
+    web_links = models.TextField(null=True, default=None)
     is_verified = models.BooleanField(default=False)
 

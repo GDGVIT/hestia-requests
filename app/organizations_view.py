@@ -52,6 +52,10 @@ class UserViewOrganization(APIView):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
+
+        city = request.query_params.get("city", None)
+        state = request.query_params.get("state", None)
+        country = request.query_params.get("country", None)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
@@ -63,6 +67,29 @@ class UserViewOrganization(APIView):
             if org.is_verified:
                 serializer = OrganizationsSerializer(org)
                 result.append(serializer.data)
+
+        field = None
+        field_value = None
+
+        if city!=None and city!="":
+            field = 'city'
+            field_value = city.lower()
+        elif state!=None and state!="":
+            field = 'state'
+            field_value = state.lower()
+        elif country!=None and country!="":
+            field = 'country'
+            field_value = country.lower()
+
+        to_remove = []
+
+        if field!=None:
+            for org in result:
+                if field_value!=(org[field].lower()):
+                    to_remove.append(org)
+
+        for item in to_remove:
+            result.remove(item)
 
         key = 1
         for item in result:
@@ -117,4 +144,3 @@ class VerifyOrganizationView(APIView):
             return Response({"message":"Organization Verified"}, status=status.HTTP_200_OK)
         except Organizations.DoesNotExist:
             return Response({"message":"Organization Does Not Exist"}, status=status.HTTP_400_BAD_REQUEST)
-
