@@ -74,7 +74,8 @@ class ItemRequestView(APIView):
         try:
             item_request = ItemRequest.objects.get(id=pk)
             serializer = ItemRequestSerializer(item_request)
-            return Response({'message':"Request Found", "Request":serializer.data}, status=status.HTTP_200_OK)
+            serializer = serializer.data
+            return Response({'message':"Request Found", "Request":serializer}, status=status.HTTP_200_OK)
         except ItemRequest.DoesNotExist:
             return Response({"maessage":"Request not found"}, status=status.HTTP_204_NO_CONTENT)
         
@@ -105,15 +106,24 @@ class AllRequestView(APIView):
 
         while flag:
             for item in data:
-                if item['request_made_by']==payload['_id']:
+                request_acceptors = item['accepted_by'].split(',')
+                if item['request_made_by']==payload['_id'] or payload['_id'] in request_acceptors:
                     data.remove(item)
 
             flag = False
 
             for item in data:
-                if item['request_made_by']==payload['_id']:
+                request_acceptors = item['accepted_by'].split(',')
+                if item['request_made_by']==payload['_id'] or payload['_id'] in request_acceptors:
                     flag = True
 
+        print(data)
+
+        key = 1
+        for item in data:
+            print(item['item_name'])
+            item['key'] = key
+            key += 1
         
 
         if len(data) == 0:
@@ -137,6 +147,11 @@ class MyRequestView(APIView):
             return Response({"message":"No Requests found"}, status=status.HTTP_204_NO_CONTENT)
         else:
             serializer = ItemRequestSerializer(requests, many=True)
+            serializer = serializer.data
+            key = 1
+            for item in serializer:
+                item['key'] = key
+                key += 1
             return Response({"message":"Requests found", "Request":serializer.data}, status=status.HTTP_200_OK)
 
 
@@ -161,9 +176,6 @@ class AcceptsView(APIView):
 
         if item_request.request_made_by == payload['_id']:
             return Response({"message":"User not allowed to accept request"}, status=status.HTTP_400_BAD_REQUEST)
-
-        print(item_request.location.lower())
-        print(request.data['location'].lower())
         
         if item_request.location.lower() == request.data['location'].lower():
             accepts = Accepts.objects.filter(Q(request_made_by=item_request.request_made_by) & Q(request_acceptor=payload['_id']))
@@ -178,6 +190,8 @@ class AcceptsView(APIView):
                 accept.request_id = accept.request_id + "," + str(item_request.id)
                 accept.save()
                 serializer = AcceptsSerializer(accept)
+                item_request.accepted_by = item_request.accepted_by + "," + payload['_id']
+                item_request.save()
                 return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
             else:
                 accepts = {
@@ -188,6 +202,8 @@ class AcceptsView(APIView):
                 serializer = AcceptsSerializer(data=accepts)
                 if serializer.is_valid():
                     serializer.save()
+                    item_request.accepted_by = payload['_id']
+                    item_request.save()
                     return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
                 else:
                     return Response({"message":"Invalid acceptor"}, status=status.HTTP_400_BAD_REQUEST)
@@ -209,4 +225,9 @@ class AcceptsView(APIView):
             return Response({"message":"No accpets found"}, status=status.HTTP_204_NO_CONTENT)
         else:
             serializer = AcceptsSerializer(accepts, many=True)
-            return Response({"message":"Accepts found", "Accepts":serializer.data}, status=status.HTTP_200_OK)
+            serializer = serializer.data
+            key = 1
+            for item in serializer:
+                item['key'] = key
+                key += 1
+            return Response({"message":"Accepts found", "Accepts":serializer}, status=status.HTTP_200_OK)
