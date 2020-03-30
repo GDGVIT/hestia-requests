@@ -164,8 +164,6 @@ class AcceptsView(APIView):
         if request.data.get('request_id', None)==None or request.data.get("location", None)==None:
             return Response({"message":"Invalid accept"}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(type(request.data['request_id']))
-
         try:
             item_request = ItemRequest.objects.get(id=int(request.data['request_id']))
         except ItemRequest.DoesNotExist:
