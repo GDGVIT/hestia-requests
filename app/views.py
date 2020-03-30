@@ -182,6 +182,7 @@ class AcceptsView(APIView):
                 if str(item_request.id) in items_accepted:
                     return Response({'message':"Item Already Accepted"}, status=status.HTTP_400_BAD_REQUEST)
                 accept.request_id = accept.request_id + "," + str(item_request.id)
+                accept.item_names = accept.item_names + "," +str(item_request.item_name)
                 accept.save()
                 serializer = AcceptsSerializer(accept)
                 item_request.accepted_by = str(item_request.accepted_by) + "," + str(payload['_id'])
@@ -191,7 +192,8 @@ class AcceptsView(APIView):
                 accepts = {
                     "request_made_by": item_request.request_made_by,
                     "request_acceptor": str(payload['_id']),
-                    "request_id": str(item_request.id)
+                    "request_id": str(item_request.id),
+                    "item_names": str(item_request.item_name)
                 }
                 serializer = AcceptsSerializer(data=accepts)
                 if serializer.is_valid():

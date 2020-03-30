@@ -13,6 +13,7 @@ class Accepts(models.Model):
     request_made_by = models.CharField(max_length=255)
     request_acceptor = models.CharField(max_length=255)
     request_id = models.CharField(max_length=500)
+    item_names = models.CharField(max_length=10000)
 
 class Organizations(models.Model):
     name = models.CharField(max_length=50)
