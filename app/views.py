@@ -17,6 +17,11 @@ from .organizations_view import (
     VerifyOrganizationView
 )
 
+class PingView(APIView):
+
+    def get(self, requests):
+        return Response({"message":"OK"}, status=status.HTTP_200_OK)
+
 class ItemRequestView(APIView):
 
     def post(self, request):
