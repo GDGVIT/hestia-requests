@@ -6,6 +6,7 @@ class ItemRequest(models.Model):
     item_name = models.CharField(max_length=100)
     quantity = models.CharField(max_length=20)
     location = models.CharField(max_length=100)
+    description = models.CharField(max_length=250, null=True, default=None)
     date_time_created = models.DateTimeField(auto_now_add=True)
     accepted_by = models.CharField(max_length=1000, default='')
 
@@ -16,15 +17,15 @@ class Accepts(models.Model):
     item_names = models.CharField(max_length=10000)
 
 class Organizations(models.Model):
-    name = models.CharField(max_length=50)
-    city = models.CharField(max_length=50)
-    state = models.CharField(max_length=50)
-    country = models.CharField(max_length=50)
-    description = models.TextField()
+    name = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    description = models.CharField(max_length=250)
     email = models.EmailField()
     phone_no = models.CharField(max_length=10)
-    address = models.CharField(max_length=200, null=True, default=None)
-    other_contact = models.TextField(null=True, default=None)
-    web_links = models.TextField(null=True, default=None)
+    address = models.CharField(max_length=250, null=True, default=None)
+    other_contact = models.CharField(max_length=250, null=True, default=None)
+    web_links = models.CharField(max_length=250, null=True, default=None)
     is_verified = models.BooleanField(default=False)
 
