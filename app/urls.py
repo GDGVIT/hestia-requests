@@ -10,6 +10,7 @@ from .views import (
     VerifyOrganizationView,
     AdminOrganizationView,
     UserViewOrganization,
+    PingView
 )
 
 router = routers.DefaultRouter()
@@ -55,5 +56,9 @@ urlpatterns = [
     path(
         'verify_organization/<int:pk>/',
         VerifyOrganizationView.as_view()
+    ),
+    path(
+        'ping/',
+        PingView.as_view()
     )
 ]
