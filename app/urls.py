@@ -6,6 +6,10 @@ from .views import (
     AllRequestView,
     AcceptsView,
     MyRequestView,
+    OrganizatonView,
+    VerifyOrganizationView,
+    AdminOrganizationView,
+    UserViewOrganization,
 )
 
 router = routers.DefaultRouter()
@@ -31,6 +35,25 @@ urlpatterns = [
     path(
         'my_requests/',
         MyRequestView.as_view()
+    ),
+    path(
+        'add_organization/',
+        OrganizatonView.as_view()
+    ),
+    path(
+        'view_organization/<int:pk>/',
+        OrganizatonView.as_view()
+    ),
+    path(
+        'user_organization_view/',
+        UserViewOrganization.as_view()
+    ),
+    path(
+        'admin_organization_view/',
+        AdminOrganizationView.as_view()
+    ),
+    path(
+        'verify_organization/<int:pk>/',
+        VerifyOrganizationView.as_view()
     )
-
 ]
