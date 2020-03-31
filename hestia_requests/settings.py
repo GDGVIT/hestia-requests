@@ -30,7 +30,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'hestia-requests.herokuapp.com',
-    'akina.ayushpriya.tech']
+    'akina.ayushpriya.tech',
+
+    "https://akina.ayushpriya.tech",]
 
 
 # Application definition
