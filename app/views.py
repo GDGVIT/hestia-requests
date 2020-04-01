@@ -42,6 +42,7 @@ class ItemRequestView(APIView):
         req_data["quantity"] = request.data["quantity"]
         req_data["location"] = request.data["location"]
         req_data['request_made_by'] = payload['_id']
+        req_data['description'] = request.data.get('description', None)
         serializer = ItemRequestSerializer(data=req_data)
         if serializer.is_valid():
             serializer.save()
