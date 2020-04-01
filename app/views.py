@@ -173,14 +173,14 @@ class AcceptsView(APIView):
             return Response({"message":"Invalid accept"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            item_request = ItemRequest.objects.get(id=int(request.data['request_id']))
+            item_request = ItemRequest.objects.get(id=int(request.data.get('request_id', None)))
         except ItemRequest.DoesNotExist:
             return Response({"message":"Request Not Found"}, status=status.HTTP_400_BAD_REQUEST)
 
         if item_request.request_made_by == payload['_id']:
             return Response({"message":"User not allowed to accept request"}, status=status.HTTP_400_BAD_REQUEST)
         
-        if item_request.location.lower() == request.data['location'].lower():
+        if item_request.location.lower() == request.data.get('location', None).lower():
             accepts = Accepts.objects.filter(Q(request_made_by=item_request.request_made_by) & Q(request_acceptor=payload['_id']))
             
             if len(accepts)!=0:
