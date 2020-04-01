@@ -38,9 +38,9 @@ class ItemRequestView(APIView):
             return Response({"message":"User has already made maximum requests"}, status=status.HTTP_400_BAD_REQUEST)
         
         req_data = {}
-        req_data["item_name"] = request.data["item_name"]
-        req_data["quantity"] = request.data["quantity"]
-        req_data["location"] = request.data["location"]
+        req_data["item_name"] = request.data.get("item_name", None)
+        req_data["quantity"] = request.data.get("quantity", None)
+        req_data["location"] = request.data.get("location", None)
         req_data['request_made_by'] = payload['_id']
         req_data['description'] = request.data.get('description', None)
         if req_data['description']=='':
