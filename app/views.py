@@ -6,6 +6,9 @@ from django.db.models import Q
 
 from app.helper_functions import get_user_id
 
+import requests
+import json
+
 # Create your views here.
 from .models import ItemRequest, Accepts
 from .serializers import ItemRequestSerializer, AcceptsSerializer
@@ -16,6 +19,12 @@ from .organizations_view import (
     UserViewOrganization,
     VerifyOrganizationView
 )
+
+def check_blocked(first_user, second_user):
+    URL = "https://hestia-report-do.herokuapp.com/api/report/check/?first_user={}&second_user={}".format(first_user, second_user)
+    response = requests.get(URL)
+    return response
+
 
 class PingView(APIView):
 
@@ -185,6 +194,13 @@ class AcceptsView(APIView):
             
             if len(accepts)!=0:
                 accept = accepts[0]
+
+                #################### CHECKING IF USERS BLOCKED EACH OTHER ####################################
+                resp = check_blocked(accept.request_made_by, accept.request_acceptor)
+                if resp.status_code==200:
+                    resp = json.loads(resp.text)
+                    return Response({"message":resp['message']}, status=status.HTTP_400_BAD_REQUEST)
+
                 items_accepted = accept.request_id
                 items_accepted = items_accepted.split(',')
                 if str(item_request.id) in items_accepted:
@@ -197,6 +213,13 @@ class AcceptsView(APIView):
                 item_request.save()
                 return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
             else:
+
+                #################### CHECKING IF USERS BLOCKED EACH OTHER ####################################
+                resp = check_blocked(item_request.request_made_by, str(payload['_id']))
+                if resp.status_code==200:
+                    resp = json.loads(resp.text)
+                    return Response({"message":resp['message']}, status=status.HTTP_400_BAD_REQUEST)
+                    
                 accepts = {
                     "request_made_by": item_request.request_made_by,
                     "request_acceptor": str(payload['_id']),
