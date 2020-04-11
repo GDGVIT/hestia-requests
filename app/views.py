@@ -12,6 +12,8 @@ import json
 # Create your views here.
 from .models import ItemRequest, Accepts
 from .serializers import ItemRequestSerializer, AcceptsSerializer
+from notification_app.views import send_notifs
+from notification_app.models import UserFCMDevice
 
 from .organizations_view import (
     OrganizatonView,
@@ -57,6 +59,27 @@ class ItemRequestView(APIView):
         serializer = ItemRequestSerializer(data=req_data)
         if serializer.is_valid():
             serializer.save()
+            registration_ids = []
+
+            userDevices = UserFCMDevice.objects.all()
+            for userDevice in userDevices:
+                registration_ids.append(userDevice.registration_id)
+
+            message_title = "New Request Arrived"
+            message_body = req_data['item_name']
+            data = {
+                "url":"http://akina.dscvit.com/feed",
+                "click_action":"FLUTTER_NOTIFICATION_CLICK",
+                "sound":"default",
+                "status":"done",
+                "screen":"screenA",
+                "location":req_data['location']
+            }
+
+            result = send_notifs(registration_ids, message_title, message_body, data)
+            if result:
+                return Response({"message":"New Request created but, failed to send notifications", "Request":serializer.data}, status=status.HTTP_200_OK)
+
             return Response({"message":"New Request created", "Request":serializer.data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message":"Invalid Request"}, status=status.HTTP_400_BAD_REQUEST)
@@ -211,6 +234,29 @@ class AcceptsView(APIView):
                 serializer = AcceptsSerializer(accept)
                 item_request.accepted_by = str(item_request.accepted_by) + "," + str(payload['_id'])
                 item_request.save()
+
+                registration_ids = []
+                
+                userDevices = UserFCMDevice.objects.filter(user_id = accept.request_made_by)
+                if len(userDevices) != 0:
+                    registration_ids.append(userDevices[0].registration_id)
+                    message_title = "Request Has been Accepted"
+                    message_body = "Your request for " + item_request.item_name + " has been accepted."
+                    data = {
+                        "url":"http://akina.dscvit.com/mychats",
+                        "click_action":"FLUTTER_NOTIFICATION_CLICK",
+                        "sound":"default",
+                        "status":"done",
+                        "screen":"screenA"
+                    }
+
+                    result = send_notifs(registration_ids, message_title, message_body, data)
+                else:
+                    result = 1
+
+                if result:
+                    return Response({"message":"Request Accepted but, failed to send notifications", "Accepts":serializer.data}, status=status.HTTP_200_OK)
+
                 return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
             else:
 
@@ -231,6 +277,29 @@ class AcceptsView(APIView):
                     serializer.save()
                     item_request.accepted_by = payload['_id']
                     item_request.save()
+
+                    registration_ids = []
+                    
+                    userDevices = UserFCMDevice.objects.filter(user_id = accepts['request_made_by'])
+                    if len(userDevices) != 0:
+                        registration_ids.append(userDevices[0].registration_id)
+                        message_title = "Request Has been Accepted"
+                        message_body = "Your request for " + item_request.item_name + " has been accepted."
+                        data = {
+                            "url":"http://akina.dscvit.com/mychats",
+                            "click_action":"FLUTTER_NOTIFICATION_CLICK",
+                            "sound":"default",
+                            "status":"done",
+                            "screen":"screenA"
+                        }
+
+                        result = send_notifs(registration_ids, message_title, message_body, data)
+                    else:
+                        result = 1
+                    
+                    if result:
+                        return Response({"message":"Request Accepted but, failed to send notifications", "Accepts":serializer.data}, status=status.HTTP_200_OK)
+
                     return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
                 else:
                     return Response({"message":"Invalid acceptor"}, status=status.HTTP_400_BAD_REQUEST)
