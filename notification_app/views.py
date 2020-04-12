@@ -100,10 +100,8 @@ class FCMPushNotificationView(APIView):
             if not user_ids:
                 return Response({"message":"Data is missing"}, status=status.HTTP_400_BAD_REQUEST)
             for user in user_ids:
-                userDevice = UserFCMDevice.objects.get(user_id=user)
-                registration_ids.append(userDevice.registration_id)
-
-        print(registration_ids)
+                userDevice = UserFCMDevice.objects.filter(user_id=user)
+                registration_ids.append(userDevice[0].registration_id)
 
         result = send_notifs(registration_ids, message_title, message_body, data)
         if result:
