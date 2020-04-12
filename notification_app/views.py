@@ -80,12 +80,15 @@ class FCMRegisterDeviceView(APIView):
 class FCMPushNotificationView(APIView):
 
     def post(self, request):
+        print(request.data)
         req_data = request.data
         message_title = req_data.get('message_title', None)
         message_body = req_data.get("message_body", None)
         data = req_data.get("data", None)
         user_ids = req_data.get("user_ids", None)
         to_all = req_data.get("to_all", None)
+        print(data)
+        print("################################")
 
         if (not message_title) or (not message_body):
             return Response({"message":"Data is missing"}, status=status.HTTP_400_BAD_REQUEST)
