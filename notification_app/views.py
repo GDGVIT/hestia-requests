@@ -16,6 +16,10 @@ from pyfcm import FCMNotification
 load_dotenv()
 
 def send_notifs(registration_ids, message_title, message_body, data=None):
+    print(data)
+    print(registration_ids)
+    print(message_body)
+    print(message_title)
     push_service = FCMNotification(api_key=os.getenv("FCM_SERVER_KEY"))
     try:
         result = push_service.notify_multiple_devices(
