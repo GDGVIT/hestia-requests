@@ -20,6 +20,8 @@ class OrganizatonView(APIView):
         if payload['_id'] is None:
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
+        print(request.data)
+
         serializer = OrganizationsSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
