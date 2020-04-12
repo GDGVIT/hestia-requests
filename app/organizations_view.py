@@ -95,10 +95,11 @@ class UserViewOrganization(APIView):
         for org in orgs:
             if org.is_verified:
                 serializer = OrganizationsSerializer(org)
+                serializer = serializer.data
                 areas = AreasCatered.objects.filter(org_id=org.id)
                 areas_serializer = AreasCateredSerializer(areas, many=True)
                 serializer['areas_catered'] = areas_serializer.data
-                result.append(serializer.data)
+                result.append(serializer)
 
         field = None
         field_value = None
