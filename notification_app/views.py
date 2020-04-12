@@ -27,8 +27,8 @@ def send_notifs(registration_ids, message_title, message_body, data=None):
         if result['success']==0:
             return 1
         return 0
-    except:
-        print("Oops!",sys.exc_info()[0],"occured.")
+    except Exception as e:
+        print(e)
         return 1
 
 
