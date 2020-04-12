@@ -53,16 +53,9 @@ class FCMRegisterDeviceView(APIView):
         req_data['user_id'] = payload['_id']
         req_data["registration_id"] = request.data.get("registration_id", None)
 
-        userDevice = UserFCMDevice.objects.filter(user_id = req_data['user_id'])
+        userDevice = UserFCMDevice.objects.filter(Q(user_id = req_data['user_id']) & Q(registration_id = req_data['registration_id']))
         if len(userDevice)!=0:
-            device =UserFCMDevice.objects.filter(Q(registration_id = req_data['registration_id']) & ~Q(user_id = req_data['user_id']))
-            if len(device)==0:
-                userDevice = userDevice[0]
-                userDevice.registration_id = req_data['registration_id']
-                userDevice.save()
-                return Response({"message":"Device details updated"}, status=status.HTTP_200_OK)
-            else:
-                return Response({"message":"Invalid registation id"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message":"Device details updated"}, status=status.HTTP_200_OK)
         else:
             data = {
                 "user_id":req_data['user_id'],
@@ -104,14 +97,24 @@ class FCMPushNotificationView(APIView):
                 return Response({"message":"Data is missing"}, status=status.HTTP_400_BAD_REQUEST)
             for user in user_ids:
                 userDevice = UserFCMDevice.objects.filter(user_id=user)
-                if len(userDevice) != 0:
-                    registration_ids.append(userDevice[0].registration_id)
+                for device in userDevice:
+                    registration_ids.append(device.registration_id)
 
         if len(registration_ids)==0:
             return Response({"message":"User not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        result = send_notifs(registration_ids, message_title, message_body, data)
-        if result:
+        success = False
+        
+        print("############################################")
+        for reg_id in registration_ids:
+            result = send_notifs([reg_id], message_title, message_body, data)
+            if result:
+                print("LOG: Notification not sent to device with device id " + reg_id)
+            else:
+                success = True
+        print("#############################################")
+            
+        if not success:
             return Response({"message":"Failed to send Notification"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message":"Notification Sent"}, status=status.HTTP_200_OK)
