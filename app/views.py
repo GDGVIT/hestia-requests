@@ -68,7 +68,7 @@ class ItemRequestView(APIView):
             message_title = "New Request Arrived"
             message_body = req_data['item_name']
             data = {
-                "url":"http://akina.dscvit.com/feed",
+                "url":"https://akina.dscvit.com/feed",
                 "click_action":"FLUTTER_NOTIFICATION_CLICK",
                 "sound":"default",
                 "status":"done",
@@ -243,7 +243,7 @@ class AcceptsView(APIView):
                     message_title = "Request Has been Accepted"
                     message_body = "Your request for " + item_request.item_name + " has been accepted."
                     data = {
-                        "url":"http://akina.dscvit.com/mychats",
+                        "url":"https://akina.dscvit.com/mychats",
                         "click_action":"FLUTTER_NOTIFICATION_CLICK",
                         "sound":"default",
                         "status":"done",
@@ -286,7 +286,7 @@ class AcceptsView(APIView):
                         message_title = "Request Has been Accepted"
                         message_body = "Your request for " + item_request.item_name + " has been accepted."
                         data = {
-                            "url":"http://akina.dscvit.com/mychats",
+                            "url":"https://akina.dscvit.com/mychats",
                             "click_action":"FLUTTER_NOTIFICATION_CLICK",
                             "sound":"default",
                             "status":"done",

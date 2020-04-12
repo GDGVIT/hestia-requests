@@ -29,3 +29,9 @@ class Organizations(models.Model):
     web_links = models.CharField(max_length=250, null=True, default=None)
     is_verified = models.BooleanField(default=False)
 
+class AreasCatered(models.Model):
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    org_id = models.ForeignKey(Organizations, on_delete=models.CASCADE)
+

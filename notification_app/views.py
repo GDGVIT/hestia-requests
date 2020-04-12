@@ -5,6 +5,7 @@ from rest_framework import status
 from django.db.models import Q
 from .models import UserFCMDevice
 from .serializers import UserFCMDeviceSerializer
+from app.helper_functions import get_user_id
 
 # Create your views here.
 
@@ -37,9 +38,17 @@ class FCMRegisterDeviceView(APIView):
     # Register a new device (create new object)
     def post(self, request):
         req_data = request.data
-        if req_data.get("user_id", None)==None or req_data.get("registration_id", None)==None:
-            return Response({"message":"User id or registration id missing"}, status=status.HTTP_400_BAD_REQUEST)
-        req_data['user_id'] = str(req_data['user_id'])
+        if req_data.get("user_token", None)==None or req_data.get("registration_id", None)==None:
+            return Response({"message":"User token or registration id missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        payload = get_user_id(req_data.get("user_token"))
+        if payload['_id'] is None:
+            return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
+
+        req_data = {}
+        req_data['user_id'] = payload['_id']
+        req_data["registration_id"] = request.data.get("registration_id", None)
+
         userDevice = UserFCMDevice.objects.filter(user_id = req_data['user_id'])
         if len(userDevice)!=0:
             device =UserFCMDevice.objects.filter(Q(registration_id = req_data['registration_id']) & ~Q(user_id = req_data['user_id']))
