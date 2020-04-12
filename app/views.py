@@ -72,7 +72,7 @@ class ItemRequestView(APIView):
                 "click_action":"FLUTTER_NOTIFICATION_CLICK",
                 "sound":"default",
                 "status":"done",
-                "screen":"screenA",
+                "screen":"Requests Page",
                 "location":req_data['location']
             }
 
@@ -247,7 +247,7 @@ class AcceptsView(APIView):
                         "click_action":"FLUTTER_NOTIFICATION_CLICK",
                         "sound":"default",
                         "status":"done",
-                        "screen":"screenA"
+                        "screen":"Chats Page"
                     }
 
                     result = send_notifs(registration_ids, message_title, message_body, data)
@@ -290,7 +290,7 @@ class AcceptsView(APIView):
                             "click_action":"FLUTTER_NOTIFICATION_CLICK",
                             "sound":"default",
                             "status":"done",
-                            "screen":"screenA"
+                            "screen":"Chats Page"
                         }
 
                         result = send_notifs(registration_ids, message_title, message_body, data)
