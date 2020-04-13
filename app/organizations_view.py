@@ -52,7 +52,7 @@ class OrganizatonView(APIView):
             return Response({"message":"Organization Saved", "organization":serializer.data}, status=status.HTTP_201_CREATED)
 
         else:
-            return Response({"message":"Invalid Data"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, pk):
         token = request.headers.get('Authorization', None)
