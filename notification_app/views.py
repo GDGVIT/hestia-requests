@@ -16,10 +16,12 @@ from pyfcm import FCMNotification
 load_dotenv()
 
 def send_notifs(registration_ids, message_title, message_body, data=None):
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
     print(data)
     print(registration_ids)
     print(message_body)
     print(message_title)
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
     push_service = FCMNotification(api_key=os.getenv("FCM_SERVER_KEY"))
     try:
         result = push_service.notify_multiple_devices(
@@ -73,18 +75,19 @@ class FCMRegisterDeviceView(APIView):
 class FCMPushNotificationView(APIView):
 
     def post(self, request):
-        print(request.data)
         req_data = request.data
         message_title = req_data.get('message_title', None)
         message_body = req_data.get("message_body", None)
         data = req_data.get("data", None)
         user_ids = req_data.get("user_ids", None)
         to_all = req_data.get("to_all", None)
-        print(data)
-        print("################################")
+        token = req_data.get("token", None)
 
-        if (not message_title) or (not message_body):
+        if (not message_title) or (not message_body) or not(token):
             return Response({"message":"Data is missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if token != os.getenv("NOTIF_CHECK_TOKEN"):
+            return Response({"message":"Not allowed to use the API"}, status=status.HTTP_403_FORBIDDEN)
 
         registration_ids = []
 

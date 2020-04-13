@@ -63,7 +63,11 @@ class ItemRequestView(APIView):
 
             userDevices = UserFCMDevice.objects.all()
             for userDevice in userDevices:
-                registration_ids.append(userDevice.registration_id)
+                print(userDevice.user_id)
+                if userDevice.user_id != payload['_id']:
+                    registration_ids.append(userDevice.registration_id)
+                else:
+                    print("Not Taking")
 
             message_title = "New Request Arrived"
             message_body = req_data['item_name']
