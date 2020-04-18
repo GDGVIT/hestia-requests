@@ -1,4 +1,4 @@
-from .models import ItemRequest, Accepts, Organizations
+from .models import ItemRequest, Accepts, Organizations, AreasCatered
 from rest_framework import serializers
 
 class ItemRequestSerializer(serializers.ModelSerializer):
@@ -14,4 +14,9 @@ class AcceptsSerializer(serializers.ModelSerializer):
 class OrganizationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organizations
+        fields = "__all__"
+
+class AreasCateredSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AreasCatered
         fields = "__all__"

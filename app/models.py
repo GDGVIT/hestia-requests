@@ -21,11 +21,17 @@ class Organizations(models.Model):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
-    description = models.CharField(max_length=250)
+    description = models.CharField(max_length=500)
     email = models.EmailField()
     phone_no = models.CharField(max_length=10)
     address = models.CharField(max_length=250, null=True, default=None)
     other_contact = models.CharField(max_length=250, null=True, default=None)
     web_links = models.CharField(max_length=250, null=True, default=None)
     is_verified = models.BooleanField(default=False)
+
+class AreasCatered(models.Model):
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    org_id = models.ForeignKey(Organizations, on_delete=models.CASCADE)
 
