@@ -68,7 +68,7 @@ class FCMRegisterDeviceView(APIView):
                 serializer.save()
                 return Response({"message":"Device Registered"}, status=status.HTTP_201_CREATED)
             else:
-                return Response({"message":"Invalid Details"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Send Alert notification to all the devices other than the users device
