@@ -70,7 +70,7 @@ class ItemRequestView(APIView):
                     print("Not Taking")
 
             message_title = "New Request Arrived"
-            message_body = req_data['item_name']
+            message_body = req_data['item_name'] + '\nCity: ' + req_data['location']
             data = {
                 "url":"https://akina.dscvit.com/feed",
                 "click_action":"FLUTTER_NOTIFICATION_CLICK",
