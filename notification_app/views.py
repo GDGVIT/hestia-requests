@@ -6,6 +6,7 @@ from django.db.models import Q
 from .models import UserFCMDevice
 from .serializers import UserFCMDeviceSerializer
 from app.helper_functions import get_user_id
+from django.db import connection
 
 # Create your views here.
 
@@ -45,10 +46,12 @@ class FCMRegisterDeviceView(APIView):
     def post(self, request):
         req_data = request.data
         if req_data.get("user_token", None)==None or req_data.get("registration_id", None)==None:
+            connection.close()
             return Response({"message":"User token or registration id missing"}, status=status.HTTP_400_BAD_REQUEST)
 
         payload = get_user_id(req_data.get("user_token"))
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         req_data = {}
@@ -57,6 +60,7 @@ class FCMRegisterDeviceView(APIView):
 
         userDevice = UserFCMDevice.objects.filter(Q(user_id = req_data['user_id']) & Q(registration_id = req_data['registration_id']))
         if len(userDevice)!=0:
+            connection.close()
             return Response({"message":"Device details updated"}, status=status.HTTP_200_OK)
         else:
             data = {
@@ -66,8 +70,10 @@ class FCMRegisterDeviceView(APIView):
             serializer = UserFCMDeviceSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
+                connection.close()
                 return Response({"message":"Device Registered"}, status=status.HTTP_201_CREATED)
             else:
+                connection.close()
                 return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -84,9 +90,11 @@ class FCMPushNotificationView(APIView):
         token = req_data.get("token", None)
 
         if (not message_title) or (not message_body) or not(token):
+            connection.close()
             return Response({"message":"Data is missing"}, status=status.HTTP_400_BAD_REQUEST)
 
         if token != os.getenv("NOTIF_CHECK_TOKEN"):
+            connection.close()
             return Response({"message":"Not allowed to use the API"}, status=status.HTTP_403_FORBIDDEN)
 
         registration_ids = []
@@ -97,6 +105,7 @@ class FCMPushNotificationView(APIView):
                 registration_ids.append(userDevice.registration_id)
         else:
             if not user_ids:
+                connection.close()
                 return Response({"message":"Data is missing"}, status=status.HTTP_400_BAD_REQUEST)
             for user in user_ids:
                 userDevice = UserFCMDevice.objects.filter(user_id=user)
@@ -104,6 +113,7 @@ class FCMPushNotificationView(APIView):
                     registration_ids.append(device.registration_id)
 
         if len(registration_ids)==0:
+            connection.close()
             return Response({"message":"User not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         success = False
@@ -118,6 +128,8 @@ class FCMPushNotificationView(APIView):
         print("#############################################")
             
         if not success:
+            connection.close()
             return Response({"message":"Failed to send Notification"}, status=status.HTTP_400_BAD_REQUEST)
 
+        connection.close()
         return Response({"message":"Notification Sent"}, status=status.HTTP_200_OK)

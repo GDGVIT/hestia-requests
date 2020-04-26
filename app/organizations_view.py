@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import Q
+from django.db import connection
 
 from app.helper_functions import get_user_id
 
@@ -14,10 +15,12 @@ class OrganizatonView(APIView):
     def post(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         print(request.data)
@@ -35,6 +38,7 @@ class OrganizatonView(APIView):
         
         areas_catered = request.data.get("areas_catered", None)
         if areas_catered==None or len(areas_catered)==0:
+            connection.close()
             return Response({"message":"Please provide Areas catered"}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = OrganizationsSerializer(data=request.data)
@@ -49,18 +53,22 @@ class OrganizatonView(APIView):
                 else:
                     print(area_serializer.errors)
 
+            connection.close()
             return Response({"message":"Organization Saved", "organization":serializer.data}, status=status.HTTP_201_CREATED)
 
         else:
+            connection.close()
             return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, pk):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -70,8 +78,10 @@ class OrganizatonView(APIView):
             areas = AreasCatered.objects.filter(org_id=pk)
             areas_serializer = AreasCateredSerializer(areas, many=True)
             serializer['areas_catered'] = areas_serializer.data
+            connection.close()
             return Response({"message":"Organization Found", "Organization":serializer}, status=status.HTTP_200_OK)
         except Organizations.DoesNotExist:
+            connection.close()
             return Response({"message":"Organization Does Not Exist"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -80,6 +90,7 @@ class UserViewOrganization(APIView):
     def get(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
 
         city = request.query_params.get("city", None)
@@ -88,6 +99,7 @@ class UserViewOrganization(APIView):
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         orgs = Organizations.objects.all()
@@ -135,8 +147,10 @@ class UserViewOrganization(APIView):
             key += 1
         
         if len(result)==0:
+            connection.close()
             return Response({"message":"Organizations not found"}, status=status.HTTP_204_NO_CONTENT)
 
+        connection.close()
         return Response({"message":"Organizaions found", "Organization":result}, status=status.HTTP_200_OK)
 
 class AdminOrganizationView(APIView):
@@ -144,15 +158,18 @@ class AdminOrganizationView(APIView):
     def get(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         orgs = Organizations.objects.all()
         
         if len(orgs)==0:
+            connection.close()
             return Response({"message":"No Organizations Found"}, status=status.HTTP_204_NO_CONTENT)
 
         serializer = OrganizationsSerializer(orgs, many=True)
@@ -165,6 +182,7 @@ class AdminOrganizationView(APIView):
             item['key'] = key
             key += 1
         
+        connection.close()
         return Response({"message":"Organizations Found", "Organization":serializer}, status=status.HTTP_200_OK)
 
 class VerifyOrganizationView(APIView):
@@ -172,16 +190,20 @@ class VerifyOrganizationView(APIView):
     def get(self, request, pk):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             org = Organizations.objects.get(id=pk)
             org.is_verified = True
             org.save()
+            connection.close()
             return Response({"message":"Organization Verified"}, status=status.HTTP_200_OK)
         except Organizations.DoesNotExist:
+            connection.close()
             return Response({"message":"Organization Does Not Exist"}, status=status.HTTP_400_BAD_REQUEST)

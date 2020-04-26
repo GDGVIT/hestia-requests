@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import Q
+from django.db import connection
 
 from app.helper_functions import get_user_id
 
@@ -38,14 +39,17 @@ class ItemRequestView(APIView):
     def post(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         item_requests = ItemRequest.objects.filter(request_made_by=payload['_id'])
         if len(item_requests) >= 5:
+            connection.close()
             return Response({"message":"User has already made maximum requests"}, status=status.HTTP_400_BAD_REQUEST)
         
         req_data = {}
@@ -81,45 +85,56 @@ class ItemRequestView(APIView):
             }
 
             result = send_notifs(registration_ids, message_title, message_body, data)
+            connection.close()
+
             if result:
                 return Response({"message":"New Request created but, failed to send notifications", "Request":serializer.data}, status=status.HTTP_200_OK)
 
             return Response({"message":"New Request created", "Request":serializer.data}, status=status.HTTP_201_CREATED)
         else:
+            connection.close()
             return Response({"message":"Invalid Request"}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             item_request = ItemRequest.objects.get(request_made_by=payload['_id'], id=pk)
             serializer = ItemRequestSerializer(item_request)
             item_request.delete()
+            connection.close()
             return Response({'message':"Request Deleted", "Request":serializer.data}, status=status.HTTP_200_OK)
         except ItemRequest.DoesNotExist:
-            return Response({"maessage":"Request not found"}, status=status.HTTP_204_NO_CONTENT)
+            connection.close()
+            return Response({"message":"Request not found"}, status=status.HTTP_204_NO_CONTENT)
 
     def get(self, request, pk):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             item_request = ItemRequest.objects.get(id=pk)
             serializer = ItemRequestSerializer(item_request)
             serializer = serializer.data
+            connection.close()
             return Response({'message':"Request Found", "Request":serializer}, status=status.HTTP_200_OK)
         except ItemRequest.DoesNotExist:
+            connection.close()
             return Response({"maessage":"Request not found"}, status=status.HTTP_204_NO_CONTENT)
         
 class AllRequestView(APIView):
@@ -127,18 +142,22 @@ class AllRequestView(APIView):
     def get(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         location = request.query_params.get('location', None)
         if location==None or location=='':
+            connection.close()
             return Response({"message":"Location not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         item_requests = ItemRequest.objects.filter(location__iexact=location)
         if len(item_requests) == 0:
+            connection.close()
             return Response({"message":"No requests found"}, status=status.HTTP_204_NO_CONTENT)
 
         serializer = ItemRequestSerializer(item_requests, many=True)
@@ -166,8 +185,10 @@ class AllRequestView(APIView):
         
 
         if len(data) == 0:
+            connection.close()
             return Response({"message":"No requests found"}, status=status.HTTP_204_NO_CONTENT)
 
+        connection.close()
         return Response({"message":"Requests found", "Request":data}, status=status.HTTP_200_OK)
 
 class MyRequestView(APIView):
@@ -175,14 +196,17 @@ class MyRequestView(APIView):
     def get(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         requests = ItemRequest.objects.filter(request_made_by=payload['_id'])
         if len(requests)==0:
+            connection.close()
             return Response({"message":"No Requests found"}, status=status.HTTP_204_NO_CONTENT)
         else:
             serializer = ItemRequestSerializer(requests, many=True)
@@ -191,6 +215,7 @@ class MyRequestView(APIView):
             for item in serializer:
                 item['key'] = key
                 key += 1
+            connection.close()
             return Response({"message":"Requests found", "Request":serializer}, status=status.HTTP_200_OK)
 
 
@@ -199,21 +224,26 @@ class AcceptsView(APIView):
     def post(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         if request.data.get('request_id', None)==None or request.data.get("location", None)==None:
+            connection.close()
             return Response({"message":"Invalid accept"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             item_request = ItemRequest.objects.get(id=int(request.data.get('request_id', None)))
         except ItemRequest.DoesNotExist:
+            connection.close()
             return Response({"message":"Request Not Found"}, status=status.HTTP_400_BAD_REQUEST)
 
         if item_request.request_made_by == payload['_id']:
+            connection.close()
             return Response({"message":"User not allowed to accept request"}, status=status.HTTP_400_BAD_REQUEST)
         
         if item_request.location.lower() == request.data.get('location', None).lower():
@@ -226,11 +256,13 @@ class AcceptsView(APIView):
                 resp = check_blocked(accept.request_made_by, accept.request_acceptor)
                 if resp.status_code==200:
                     resp = json.loads(resp.text)
+                    connection.close()
                     return Response({"message":resp['message']}, status=status.HTTP_400_BAD_REQUEST)
 
                 items_accepted = accept.request_id
                 items_accepted = items_accepted.split(',')
                 if str(item_request.id) in items_accepted:
+                    connection.close()
                     return Response({'message':"Item Already Accepted"}, status=status.HTTP_400_BAD_REQUEST)
                 accept.request_id = accept.request_id + "," + str(item_request.id)
                 accept.item_names = accept.item_names + "," +str(item_request.item_name)
@@ -259,8 +291,10 @@ class AcceptsView(APIView):
                     result = 1
 
                 if result:
+                    connection.close()
                     return Response({"message":"Request Accepted but, failed to send notifications", "Accepts":serializer.data}, status=status.HTTP_200_OK)
 
+                connection.close()
                 return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
             else:
 
@@ -268,6 +302,7 @@ class AcceptsView(APIView):
                 resp = check_blocked(item_request.request_made_by, str(payload['_id']))
                 if resp.status_code==200:
                     resp = json.loads(resp.text)
+                    connection.close()
                     return Response({"message":resp['message']}, status=status.HTTP_400_BAD_REQUEST)
                     
                 accepts = {
@@ -302,26 +337,33 @@ class AcceptsView(APIView):
                         result = 1
                     
                     if result:
+                        connection.close()
                         return Response({"message":"Request Accepted but, failed to send notifications", "Accepts":serializer.data}, status=status.HTTP_200_OK)
 
+                    connection.close()
                     return Response({"message": "Request Accepted", "Accepts":serializer.data}, status=status.HTTP_200_OK)
                 else:
+                    connection.close()
                     return Response({"message":"Invalid acceptor"}, status=status.HTTP_400_BAD_REQUEST)
         else:
+            connection.close()
             return Response({"message":"Locations are not same"}, status=status.HTTP_400_BAD_REQUEST)
 
     
     def get(self, request):
         token = request.headers.get('Authorization', None)
         if token is None or token=="":
+            connection.close()
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
         payload = get_user_id(token)
         if payload['_id'] is None:
+            connection.close()
             return Response({"message":payload['message']}, status=status.HTTP_403_FORBIDDEN)
 
         accepts = Accepts.objects.filter(Q(request_made_by=payload['_id']) | Q(request_acceptor=payload['_id']))
         if len(accepts)==0:
+            connection.close()
             return Response({"message":"No accpets found"}, status=status.HTTP_204_NO_CONTENT)
         else:
             serializer = AcceptsSerializer(accepts, many=True)
@@ -330,4 +372,5 @@ class AcceptsView(APIView):
             for item in serializer:
                 item['key'] = key
                 key += 1
+            connection.close()
             return Response({"message":"Accepts found", "Accepts":serializer}, status=status.HTTP_200_OK)
