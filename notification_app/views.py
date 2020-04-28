@@ -61,6 +61,7 @@ class FCMRegisterDeviceView(APIView):
         userDevice = UserFCMDevice.objects.filter(Q(user_id = req_data['user_id']) & Q(registration_id = req_data['registration_id']))
         if len(userDevice)!=0:
             connection.close()
+            print('device alreay exists')
             return Response({"message":"Device details updated"}, status=status.HTTP_200_OK)
         else:
             data = {
@@ -71,10 +72,12 @@ class FCMRegisterDeviceView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 connection.close()
+                print("Registered")
                 return Response({"message":"Device Registered"}, status=status.HTTP_201_CREATED)
             else:
+                print(serializer.errors)
                 connection.close()
-                return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"Unable to register device"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Send Alert notification to all the devices other than the users device
