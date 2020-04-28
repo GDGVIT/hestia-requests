@@ -11,7 +11,7 @@ class ItemRequest(models.Model):
     accepted_by = models.CharField(max_length=1000, default='')
 
     class Meta:
-        ordering = ['-date_time']
+        ordering = ['-date_time_created']
 
 class Accepts(models.Model):
     request_made_by = models.CharField(max_length=255)
