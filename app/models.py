@@ -10,6 +10,9 @@ class ItemRequest(models.Model):
     date_time_created = models.DateTimeField(auto_now_add=True)
     accepted_by = models.CharField(max_length=1000, default='')
 
+    class Meta:
+        ordering = ['-date_time']
+
 class Accepts(models.Model):
     request_made_by = models.CharField(max_length=255)
     request_acceptor = models.CharField(max_length=255)
