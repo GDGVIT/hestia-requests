@@ -24,7 +24,7 @@ from .organizations_view import (
 )
 
 def check_blocked(first_user, second_user):
-    URL = "https://hestia-report-do.herokuapp.com/api/report/check/?first_user={}&second_user={}".format(first_user, second_user)
+    URL = "https://akina.ayushpriya.tech/api/report/check/?first_user={}&second_user={}".format(first_user, second_user)
     response = requests.get(URL)
     return response
 
